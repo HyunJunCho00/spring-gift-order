@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>상품목록</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+            list-style: none;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination a {
+            color: #007bff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+
+        .pagination li.active a {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination li.disabled a {
+            color: #6c757d;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<h1>상품목록</h1>
+
+<a th:href="@{/admin/products/new}">+ 새 상품 등록</a>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>이름</th>
+        <th>가격</th>
+        <th>이미지</th>
+        <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- 1. Page 객체의 .content 속성을 사용하여 데이터 목록에 접근합니다. -->
+    <tr th:each="product : ${productPage.content}">
+        <td th:text="${product.id}">1</td>
+        <td th:text="${product.name}">아이스 아메리카노</td>
+        <td th:text="${product.price}">4500</td>
+        <td>
+            <img th:src="${product.imageUrl}" width="100" alt="이미지"/>
+        </td>
+        <td>
+            <a th:href="@{'/admin/products/' + ${product.id}}">상세</a>
+            <a th:href="@{'/admin/products/' + ${product.id} + '/edit'}">수정</a>
+            <form th:action="@{'/admin/products/' + ${product.id} + '/delete'}" method="post" style="display:inline;">
+                <button type="submit">삭제</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<nav th:if="${productPage.totalPages > 0}" aria-label="Page navigation">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${productPage.first} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin/products(page=${productPage.number - 1})}">&laquo;</a>
+        </li>
+        <li class="page-item"
+            th:each="pageNumber : ${#numbers.sequence(0, productPage.totalPages - 1)}"
+            th:classappend="${pageNumber == productPage.number} ? 'active'">
+            <a class="page-link" th:href="@{/admin/products(page=${pageNumber})}" th:text="${pageNumber + 1}"></a>
+        </li>
+        <li class="page-item" th:classappend="${productPage.last} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin/products(page=${productPage.number + 1})}">&raquo;</a>
+        </li>
+    </ul>
+</nav>
+
+</body>
+</html>
