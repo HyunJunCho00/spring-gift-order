@@ -74,4 +74,16 @@ public class ApiExceptionHandler {
     public ErrorResponse handleUnauthorizedWishAccess(UnauthorizedWishAccessException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler(OptionAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleEOptionalAlreadyExists(OptionAlreadyExistsException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(KakaoAuthenticationException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ErrorResponse handleKakaoAuthenticationException(KakaoAuthenticationException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }
