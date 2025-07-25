@@ -1,0 +1,4 @@
+kakao:
+  api:
+    client-id: 62251464ade63116e20f8d2dc2cfd473
+    redirect-uri: http://localhost:8080
