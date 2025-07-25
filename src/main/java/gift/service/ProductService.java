@@ -3,6 +3,7 @@ package gift.service;
 import gift.dto.*;
 import gift.entity.Option;
 import gift.entity.Product;
+import gift.exception.OptionAlreadyExistsException;
 import gift.exception.ProductNotFoundException;
 import gift.repository.OptionRepository;
 import gift.repository.ProductRepository;
@@ -37,6 +38,11 @@ public class ProductService {
     public OptionResponseDto addOptionToProduct(Long productId, OptionRequestDto optionDto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("상품을 찾을 수 없습니다: " + productId));
+
+        optionRepository.findByProductAndName(product, optionDto.getName())
+                .ifPresent(option -> {
+                    throw new OptionAlreadyExistsException("이미 존재하는 옵션 이름입니다: " + optionDto.getName());
+                });
 
         Option newOption = new Option(optionDto.getName(), optionDto.getQuantity(), product);
         Option savedOption = optionRepository.save(newOption);

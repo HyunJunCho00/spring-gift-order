@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class MemberPageController {
 
-    @GetMapping("/")
+    @GetMapping(value = "/", params = "!code")
     public String home() {
-        return "redirect:/login";
+        return "redirect:/admin/products";
     }
 
     @GetMapping("/login")
