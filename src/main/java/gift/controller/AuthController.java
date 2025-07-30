@@ -54,7 +54,7 @@ public class AuthController {
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
 
-        return "auth-access";
+        return "home";
     }
 
 }
