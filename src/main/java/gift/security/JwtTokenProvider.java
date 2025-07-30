@@ -21,11 +21,11 @@ public class JwtTokenProvider {
         this.validityInMilliseconds = validityInMilliseconds;
     }
 
-    public String createToken(String email) {
+    public String createToken(Long memberId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
         return Jwts.builder()
-                .subject(email)
+                .subject(String.valueOf(memberId))
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(key)

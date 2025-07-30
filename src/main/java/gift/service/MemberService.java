@@ -32,9 +32,9 @@ public class MemberService {
     public LoginResponse register(RegisterRequestDto request) {
         String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
         Member newMember = new Member(null, request.email(), hashedPassword, Role.USER, null, null);
-        memberRepository.save(newMember);
+        Member saveMember = memberRepository.save(newMember);
 
-        String accessToken = jwtTokenProvider.createToken(newMember.getEmail());
+        String accessToken = jwtTokenProvider.createToken(saveMember.getId());
         return new LoginResponse(accessToken);
     }
 
@@ -45,7 +45,7 @@ public class MemberService {
             throw new LoginFailedException("비밀번호가 일치하지 않습니다.");
         }
 
-        String accessToken = jwtTokenProvider.createToken(member.getEmail());
+        String accessToken = jwtTokenProvider.createToken(member.getId());
         return new LoginResponse(accessToken);
     }
 
