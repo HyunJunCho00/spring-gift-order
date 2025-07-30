@@ -63,7 +63,7 @@ public class MemberService {
                     return m;
                 })
                 .orElseGet(() -> {
-                    String tempPassword = "jrqp37kls6vm^20!";
+                    String tempPassword = "temp_password";
                     String hashedPassword = BCrypt.hashpw(tempPassword, BCrypt.gensalt());
                     Member newMember = new Member(null, finalEmail, hashedPassword, Role.USER, nickname, profileImageUrl);
                     return memberRepository.save(newMember);
