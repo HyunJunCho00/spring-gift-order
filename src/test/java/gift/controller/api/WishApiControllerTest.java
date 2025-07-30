@@ -36,7 +36,7 @@ public class WishApiControllerTest {
 
     @BeforeEach
     void setUp() {
-        this.userAToken = jwtTokenProvider.createToken(1L);
+        this.userAToken = jwtTokenProvider.createToken("user@email.com");
     }
 
     @Test
@@ -81,7 +81,7 @@ public class WishApiControllerTest {
 
     @Test
     void deleteWishFailWhenUnauthorized() throws Exception {
-        String userBToken = jwtTokenProvider.createToken(2L);
+        String userBToken = jwtTokenProvider.createToken("user@email.com");
         Long wishIdOfUserA = 1001L;
         mockMvc.perform(delete("/api/wishes/" + wishIdOfUserA)
                         .header("Authorization", "Bearer " + userBToken))

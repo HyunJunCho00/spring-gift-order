@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,24 +43,26 @@ public class AuthController {
     public String kakaoLogin() {
         String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize?client_id=" + kakaoClientId
                 + "&redirect_uri=" + kakaoRedirectUri
-                + "&response_type=code";
+                + "&response_type=code"
+                + "&scope=profile_nickname,profile_image&prompt=login";
         return "redirect:" + kakaoAuthUrl;
     }
 
     @GetMapping("/kakao/callback")
-    public String kakaoCallback(@RequestParam("code") String code, HttpServletResponse response) {
+    public String kakaoCallback(@RequestParam("code") String code, HttpServletResponse response, Model model) {
         String kakaoAccessToken = kakaoAuthService.getAccessToken(code);
+        System.out.println("kakaoAccessToken = " + kakaoAccessToken);
         KakaoUserInfoResponse userInfo = kakaoAuthService.getUserInfo(kakaoAccessToken);
         Member member = memberService.loginOrRegister(userInfo, kakaoAccessToken);
 
         String accessToken = jwtTokenProvider.createToken(member.getEmail());
-
-        log.info("발급된 JWT Access Token: {}", accessToken);
-
         Cookie cookie = new Cookie("accessToken", accessToken);
         cookie.setPath("/");
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
+
+        model.addAttribute("accessToken", kakaoAccessToken);
+
         return "auth-success";
     }
 }

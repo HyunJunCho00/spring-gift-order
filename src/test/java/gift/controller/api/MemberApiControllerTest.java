@@ -30,9 +30,7 @@ public class MemberApiControllerTest {
     private ObjectMapper objectMapper;
 
     private RegisterRequestDto createDefaultRegisterRequest() {
-        RegisterRequestDto request = new RegisterRequestDto();
-        request.setEmail("test@email.com");
-        request.setPassword("password");
+        RegisterRequestDto request = new RegisterRequestDto("test@email.com","password");
         return request;
     }
 
@@ -54,10 +52,8 @@ public class MemberApiControllerTest {
         mockMvc.perform(post("/api/members/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)));
+        LoginRequestDto loginRequest = new LoginRequestDto("test@email.com", "password");
 
-        LoginRequestDto loginRequest = new LoginRequestDto();
-        loginRequest.setEmail(registerRequest.getEmail());
-        loginRequest.setPassword("password");
 
         mockMvc.perform(post("/api/members/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -72,9 +68,8 @@ public class MemberApiControllerTest {
         mockMvc.perform(post("/api/members/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)));
-        LoginRequestDto loginRequest = new LoginRequestDto();
-        loginRequest.setEmail(registerRequest.getEmail());
-        loginRequest.setPassword("wrong_password");
+        LoginRequestDto loginRequest = new LoginRequestDto("test@email.com", "w_password");
+
         mockMvc.perform(post("/api/members/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
@@ -95,9 +90,8 @@ public class MemberApiControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated());
 
-        LoginRequestDto loginRequest = new LoginRequestDto();
-        loginRequest.setEmail(registerRequest.getEmail());
-        loginRequest.setPassword("password");
+        LoginRequestDto loginRequest = new LoginRequestDto("test@email.com", "password");
+
 
         MvcResult loginResult = mockMvc.perform(post("/api/members/login")
                         .contentType(MediaType.APPLICATION_JSON)

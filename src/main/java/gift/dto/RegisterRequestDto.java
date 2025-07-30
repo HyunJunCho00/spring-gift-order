@@ -11,7 +11,4 @@ public record RegisterRequestDto(
         @NotBlank
         String password
 ) {
-    public String getEmail() {
-        return email;
-    }
 }

@@ -32,6 +32,11 @@ public class Member {
     protected Member() {
     }
 
+    public Member(String email,String password){
+        this.email = email;
+        this.password = password;
+    }
+
     public Member(Long id, String email, String password, Role role, String nickname, String profileImageUrl) {
         this.id = id;
         this.email = email;
@@ -39,6 +44,9 @@ public class Member {
         this.role = role;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public Member(long l, String mail, String hashPassword) {
     }
 
     public void updateProfile(String nickname, String profileImageUrl) {
@@ -57,4 +65,5 @@ public class Member {
     public String getNickname() { return nickname; }
     public String getProfileImageUrl() { return profileImageUrl; }
     public String getKakaoAccessToken() { return kakaoAccessToken; }
+    public List<Wish> getWishes() { return wishes; }
 }
