@@ -62,8 +62,8 @@ public class KakaoAuthService {
                             order.getMessage()
                     ),
                     "link", Map.of(
-                            "web_url", "http://localhost:8080/admin/items",
-                            "mobile_web_url", "http://localhost:8080/admin/items"
+                            "web_url", "http://localhost:8080/admin/products",
+                            "mobile_web_url", "http://localhost:8080/admin/products"
                     ),
                     "button_title", "주문 내역 확인"
             );

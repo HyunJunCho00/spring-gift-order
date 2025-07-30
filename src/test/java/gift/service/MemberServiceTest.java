@@ -1,9 +1,6 @@
 package gift.service;
 
-import gift.dto.LoginRequestDto;
-import gift.dto.MemberProfileDto;
-import gift.dto.RegisterRequestDto;
-import gift.dto.TokenResponse;
+import gift.dto.*;
 import gift.entity.Member;
 import gift.exception.EmailAlreadyExistsException;
 import gift.exception.LoginFailedException;
@@ -61,8 +58,8 @@ public class MemberServiceTest {
     void register_success() {
         given(memberRepository.findByEmail(registerRequestDto.getEmail())).willReturn(Optional.empty());
         given(memberRepository.save(any(Member.class))).willReturn(member);
-        given(jwtTokenProvider.createToken(member.getId())).willReturn("test.token");
-        TokenResponse tokenResponse = memberService.register(registerRequestDto);
+        given(jwtTokenProvider.createToken(member.getEmail())).willReturn("test.token");
+        LoginResponse tokenResponse = memberService.register(registerRequestDto);
         assertThat(tokenResponse.getToken()).isEqualTo("test.token");
         verify(memberRepository).save(any(Member.class));
     }

@@ -14,6 +14,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @Transactional(readOnly = true)
 public class MemberService {
@@ -29,7 +31,7 @@ public class MemberService {
     @Transactional
     public LoginResponse register(RegisterRequestDto request) {
         String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
-        Member newMember = new Member(null, request.email(), hashedPassword,Role.USER,null, null);
+        Member newMember = new Member(null, request.email(), hashedPassword, Role.USER, null, null);
         memberRepository.save(newMember);
 
         String accessToken = jwtTokenProvider.createToken(newMember.getEmail());
@@ -49,12 +51,9 @@ public class MemberService {
 
     @Transactional
     public Member loginOrRegister(KakaoUserInfoResponse userInfo, String accessToken) {
-        String email = userInfo.getEmail();
-        if (email == null) {
-            email = userInfo.id() + "@gmail.com";
-        }
-        String nickname = userInfo.getNickname();
-        String profileImageUrl = userInfo.getProfileImageUrl();
+        String email = UUID.randomUUID().toString();
+        String nickname = UUID.randomUUID().toString();
+        String profileImageUrl = userInfo.properties().profileImage();
         final String finalEmail = email;
 
         Member member = memberRepository.findByEmail(finalEmail)
