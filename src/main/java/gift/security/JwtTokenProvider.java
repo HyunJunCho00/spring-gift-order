@@ -21,11 +21,11 @@ public class JwtTokenProvider {
         this.validityInMilliseconds = validityInMilliseconds;
     }
 
-    public String createToken(Long memberId) {
+    public String createToken(String email) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
         return Jwts.builder()
-                .subject(String.valueOf(memberId)) // Deprecated된 setSubject 대신 subject 사용 (리뷰 반영)
+                .subject(email)
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(key)

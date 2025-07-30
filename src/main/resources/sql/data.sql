@@ -1,3 +1,4 @@
+DELETE FROM orders;
 DELETE FROM product_options;
 DELETE FROM wish;
 DELETE FROM product;

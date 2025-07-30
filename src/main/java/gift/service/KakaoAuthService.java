@@ -1,49 +1,79 @@
 package gift.service;
 
-import gift.config.kakao.KakaoProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import gift.client.KakaoClient;
 import gift.dto.kakao.KakaoTokenResponse;
-import gift.exception.KakaoAuthenticationException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
+import gift.dto.kakao.KakaoUserInfoResponse;
+import gift.entity.Order;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
+import java.util.Map;
 
 @Service
 public class KakaoAuthService {
 
-    private final KakaoProperties kakaoProperties;
-    private final RestTemplate restTemplate;
+    private final KakaoClient kakaoClient;
+    private final String clientId;
+    private final String redirectUri;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public KakaoAuthService(KakaoProperties kakaoProperties, RestTemplate restTemplate) {
-        this.kakaoProperties = kakaoProperties;
-        this.restTemplate = restTemplate;
+    public KakaoAuthService(
+            KakaoClient kakaoClient,
+            @Value("${kakao.client.id}") String clientId,
+            @Value("${kakao.redirect.uri}") String redirectUri
+    ) {
+        this.kakaoClient = kakaoClient;
+        this.clientId = clientId;
+        this.redirectUri = redirectUri;
     }
 
-    public String getAccessToken(String authorizationCode) {
-        String url = "https://kauth.kakao.com/oauth/token";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE + ";charset=utf-8");
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", kakaoProperties.clientId());
-        body.add("redirect_uri", kakaoProperties.redirectUri());
-        body.add("code", authorizationCode);
-
-        RequestEntity<MultiValueMap<String, String>> request = new RequestEntity<>(body, headers, HttpMethod.POST, URI.create(url));
-
-        KakaoTokenResponse response = restTemplate.exchange(request, KakaoTokenResponse.class).getBody();
+    public String getAccessToken(String code) {
+        KakaoTokenResponse response = kakaoClient.getKakaoToken(code, clientId, redirectUri);
 
         if (response == null) {
-            throw new KakaoAuthenticationException("카카오로부터 액세스 토큰을 받아오지 못했습니다.");
+            throw new RuntimeException("카카오 토큰을 발급받는데 실패했습니다.");
         }
         return response.accessToken();
+    }
+
+    public KakaoUserInfoResponse getUserInfo(String accessToken) {
+        KakaoUserInfoResponse response = kakaoClient.fetchUserInfo(accessToken);
+
+        if (response == null) {
+            throw new RuntimeException("카카오 사용자 정보를 가져오는데 실패했습니다.");
+        }
+        return response;
+    }
+
+    public void sendMessageToMe(String accessToken, Order order) {
+        try {
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+
+            Map<String, Object> template = Map.of(
+                    "object_type", "text",
+                    "text", String.format(
+                            "주문이 완료되었습니다! 🎉\n\n- 상품명: %s\n- 옵션: %s\n- 수량: %d개\n- 메시지: %s",
+                            order.getOption().getProduct().getName(),
+                            order.getOption().getName(),
+                            order.getQuantity(),
+                            order.getMessage()
+                    ),
+                    "link", Map.of(
+                            "web_url", "http://localhost:8080/admin/items",
+                            "mobile_web_url", "http://localhost:8080/admin/items"
+                    ),
+                    "button_title", "주문 내역 확인"
+            );
+
+            String templateJson = objectMapper.writeValueAsString(template);
+            body.add("template_object", templateJson);
+
+            kakaoClient.sendKakaoTalkMessage(accessToken, body);
+        } catch (Exception e) {
+            throw new RuntimeException("카카오톡 메시지 전송에 실패했습니다.", e);
+        }
     }
 }

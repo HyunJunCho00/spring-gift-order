@@ -1,11 +1,12 @@
 package gift.service;
 
 import gift.dto.LoginRequestDto;
+import gift.dto.LoginResponse;
 import gift.dto.MemberProfileDto;
 import gift.dto.RegisterRequestDto;
-import gift.dto.TokenResponse;
+import gift.dto.kakao.KakaoUserInfoResponse;
 import gift.entity.Member;
-import gift.exception.EmailAlreadyExistsException;
+import gift.entity.Role;
 import gift.exception.LoginFailedException;
 import gift.repository.MemberRepository;
 import gift.security.JwtTokenProvider;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class MemberService {
+
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -25,28 +27,49 @@ public class MemberService {
     }
 
     @Transactional
-    public TokenResponse register(RegisterRequestDto request) {
-        memberRepository.findByEmail(request.getEmail()).ifPresent(m -> {
-            throw new EmailAlreadyExistsException("이미 가입된 이메일입니다: " + request.getEmail());
-        });
+    public LoginResponse register(RegisterRequestDto request) {
+        String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+        Member newMember = new Member(null, request.email(), hashedPassword,Role.USER,null, null);
+        memberRepository.save(newMember);
 
-        String encodedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
-        Member member = new Member(request.getEmail(), encodedPassword);
-        Member savedMember = memberRepository.save(member);
-
-        String token = jwtTokenProvider.createToken(savedMember.getId());
-        return new TokenResponse(token);
+        String accessToken = jwtTokenProvider.createToken(newMember.getEmail());
+        return new LoginResponse(accessToken);
     }
 
-    public TokenResponse login(LoginRequestDto request) {
-        Member member = memberRepository.findByEmail(request.getEmail())
+    public LoginResponse login(LoginRequestDto request) {
+        Member member = memberRepository.findByEmail(request.email())
                 .orElseThrow(() -> new LoginFailedException("가입되지 않은 이메일입니다."));
-
-        if (!BCrypt.checkpw(request.getPassword(), member.getPassword())) {
+        if (!BCrypt.checkpw(request.password(), member.getPassword())) {
             throw new LoginFailedException("비밀번호가 일치하지 않습니다.");
         }
-        String token = jwtTokenProvider.createToken(member.getId());
-        return new TokenResponse(token);
+
+        String accessToken = jwtTokenProvider.createToken(member.getEmail());
+        return new LoginResponse(accessToken);
+    }
+
+    @Transactional
+    public Member loginOrRegister(KakaoUserInfoResponse userInfo, String accessToken) {
+        String email = userInfo.getEmail();
+        if (email == null) {
+            email = userInfo.id() + "@gmail.com";
+        }
+        String nickname = userInfo.getNickname();
+        String profileImageUrl = userInfo.getProfileImageUrl();
+        final String finalEmail = email;
+
+        Member member = memberRepository.findByEmail(finalEmail)
+                .map(m -> {
+                    m.updateProfile(nickname, profileImageUrl);
+                    return m;
+                })
+                .orElseGet(() -> {
+                    String tempPassword = "jrqp37kls6vm^20!";
+                    String hashedPassword = BCrypt.hashpw(tempPassword, BCrypt.gensalt());
+                    Member newMember = new Member(null, finalEmail, hashedPassword, Role.USER, nickname, profileImageUrl);
+                    return memberRepository.save(newMember);
+                });
+        member.updateKakaoAccessToken(accessToken);
+        return member;
     }
 
     public MemberProfileDto findMemberProfileById(Long memberId) {
