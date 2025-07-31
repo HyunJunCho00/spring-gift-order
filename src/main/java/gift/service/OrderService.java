@@ -6,6 +6,7 @@ import gift.entity.Member;
 import gift.entity.Option;
 import gift.entity.Order;
 import gift.entity.Product;
+import gift.exception.OutofStockException;
 import gift.exception.ProductNotFoundException;
 import gift.repository.OptionRepository;
 import gift.repository.OrderRepository;
@@ -32,6 +33,10 @@ public class OrderService {
     public OrderResponseDto createOrder(OrderRequestDto request, Member member) {
         Option option = optionRepository.findById(request.optionId())
                 .orElseThrow(() -> new ProductNotFoundException("해당 ID의 옵션을 찾을 수 없습니다: " + request.optionId()));
+
+        if (option.getQuantity()< request.quantity()){
+            throw new OutofStockException("<상품의 재고가 부족합니다. (수량): " + request.quantity());
+        }
 
         option.subtractQuantity(request.quantity());
 

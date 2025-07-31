@@ -54,3 +54,30 @@ MockRestServiceServer 활용: 실제 네트워크 요청 없이도, 카카오 �
 └── gift
 └── service
 └── KakaoAuthServiceTest.java // @RestClientTest 활용
+
+
+🎁 주문 기능 주요 구현 내용
+트랜잭션을 이용한 재고 동시성 관리
+원자적 재고 차감: 주문 생성과 재고 수량 차감 로직을 하나의 트랜잭션(@Transactional)으로 묶어, 여러 주문이 동시에 발생해도 데이터의 정합성이 깨지지 않도록 구현했다.
+
+객체지향적 설계: 재고 확인 및 차감 로직을 Option 엔티티 내부의 subtractQuantity 메서드로 위임하여, Option 스스로 자신의 데이터를 관리하도록 책임을 명확히 분리했다.
+
+커스텀 예외를 통한 명확한 오류 피드백
+계층적 예외 구조 설계: 카카오 API 연동, 재고 부족 등 각기 다른 도메인의 오류를 명확하게 구분하기 위해 계층적인 커스텀 예외 구조를 도입했다.
+
+구체적인 예외 정의:
+
+OutOfStockException: 주문 수량이 재고보다 많을 경우 발생하며, HTTP 400 Bad Request를 반환하여 사용자에게 재고 부족 상황을 명확히 알린다.
+
+KakaoAuthenticationException: 카카오 API 연동 중 발생하는 모든 예외의 부모 역할을 하도록 설계했다. 이 예외를 상속하는 자식 예외들을 통해 오류의 원인을 세분화했다.
+
+KakaoTokenException: 토큰 발급 실패 시 발생
+
+KakaoUserInfoException: 사용자 정보 조회 실패 시 발생
+
+KakaoMessageSendException: 메시지 전송 실패 시 발생
+
+중앙 집중 처리: ApiExceptionHandler에서 부모 예외인 KakaoAuthenticationException을 처리하도록 하여, 모든 카카오 관련 예외 발생 시 HTTP 502 Bad Gateway를 일관되게 반환하도록 구현했다.
+
+주문 완료 후 비동기 알림 연동
+카카오톡 알림: 주문이 성공적으로 데이터베이스에 저장된 후, KakaoAuthService를 호출하여 주문자 본인에게 "나에게 보내기"로 주문 내역이 담긴 카카오톡 메시지를 전송하는 기능을 구현했다.
