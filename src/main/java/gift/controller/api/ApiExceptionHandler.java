@@ -13,6 +13,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice("gift.controller.api")
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(OutofStockException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleOutOfStock(OutofStockException ex) {
+        return new ErrorResponse(ex.getMessage());
+    }
+
     @ExceptionHandler(ProductNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleProductNotFound(ProductNotFoundException ex) {
@@ -85,5 +91,11 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public ErrorResponse handleKakaoAuthenticationException(KakaoAuthenticationException e) {
         return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleMemberNotFound(MemberNotFoundException ex) {
+        return new ErrorResponse(ex.getMessage());
     }
 }

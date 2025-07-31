@@ -1,11 +1,12 @@
 package gift.controller.api;
 
 import gift.dto.LoginRequestDto;
+import gift.dto.LoginResponse;
 import gift.dto.MemberProfileDto;
 import gift.dto.RegisterRequestDto;
-import gift.dto.TokenResponse;
 import gift.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,15 +22,16 @@ public class MemberApiController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<TokenResponse> register(@RequestBody RegisterRequestDto request) {
-        TokenResponse tokenResponse = memberService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(tokenResponse);
+    public ResponseEntity<LoginResponse> register(
+            @Valid @RequestBody RegisterRequestDto request) {
+        LoginResponse response = memberService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDto request) {
-        TokenResponse tokenResponse = memberService.login(request);
-        return ResponseEntity.ok(tokenResponse);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequestDto request) {
+        LoginResponse response = memberService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")

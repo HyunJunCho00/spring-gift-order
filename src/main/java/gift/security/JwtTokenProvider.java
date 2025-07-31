@@ -25,7 +25,7 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
         return Jwts.builder()
-                .subject(String.valueOf(memberId)) // Deprecated된 setSubject 대신 subject 사용 (리뷰 반영)
+                .subject(String.valueOf(memberId))
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(key)
