@@ -1,20 +1,42 @@
 package gift.service;
-import gift.entity.*;
+
+import gift.client.KakaoClient;
+import gift.entity.Member;
+import gift.entity.Option;
+import gift.entity.Product;
+import gift.entity.Role;
+import gift.entity.Order;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.util.MultiValueMap;
 
-@SpringBootTest
-public class KakaoMessageSendTest{
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
-    @Autowired
-    KakaoAuthService kakaoAuthService;
+@ExtendWith(MockitoExtension.class)
+public class KakaoMessageSendTest {
+
+    @Mock
+    private KakaoClient kakaoClient;
+
+    @InjectMocks
+    private KakaoAuthService kakaoAuthService;
 
     @Test
     void test() {
-        String accessToken = "p3GpZuXKmZOcOex71YBJdIpLyPBuckifAAAAAQoNIZYAAAGYW92VbbG7d-HwzTGR";
+        String accessToken = "fake-token-for-test";
         Order order = getOrder();
+
         kakaoAuthService.sendMessageToMe(accessToken, order);
+
+        verify(kakaoClient).sendKakaoTalkMessage(
+                eq(accessToken),
+                any(MultiValueMap.class)
+        );
     }
 
     private static Order getOrder() {

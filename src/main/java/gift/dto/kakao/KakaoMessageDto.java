@@ -14,7 +14,8 @@ public record KakaoMessageDto(
     public record Link(
             @JsonProperty("web_url") String webUrl,
             @JsonProperty("mobile_web_url") String mobileWebUrl
-    ) {}
+    ) {
+    }
 
     public static String toTemplateObject(Order order, ObjectMapper objectMapper) throws JsonProcessingException {
         String messageText = String.format(

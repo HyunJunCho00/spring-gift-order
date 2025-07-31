@@ -5,6 +5,9 @@ import gift.client.KakaoClient;
 import gift.dto.kakao.KakaoTokenResponse;
 import gift.dto.kakao.KakaoUserInfoResponse;
 import gift.entity.Order;
+import gift.exception.KakaoMessageSendException;
+import gift.exception.KakaoTokenException;
+import gift.exception.KakaoUserInfoException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -34,7 +37,7 @@ public class KakaoAuthService {
         KakaoTokenResponse response = kakaoClient.getKakaoToken(code, clientId, redirectUri);
 
         if (response == null) {
-            throw new RuntimeException("카카오 토큰을 발급받는데 실패했습니다.");
+            throw new KakaoTokenException("카카오 토큰을 발급받는데 실패했습니다.");
         }
         return response.accessToken();
     }
@@ -43,7 +46,7 @@ public class KakaoAuthService {
         KakaoUserInfoResponse response = kakaoClient.fetchUserInfo(accessToken);
 
         if (response == null) {
-            throw new RuntimeException("카카오 사용자 정보를 가져오는데 실패했습니다.");
+            throw new KakaoUserInfoException("카카오 사용자 정보를 가져오는데 실패했습니다.");
         }
         return response;
     }
@@ -73,7 +76,7 @@ public class KakaoAuthService {
 
             kakaoClient.sendKakaoTalkMessage(accessToken, body);
         } catch (Exception e) {
-            throw new RuntimeException("카카오톡 메시지 전송에 실패했습니다.", e);
+            throw new KakaoMessageSendException("카카오톡 메시지 전송에 실패했습니다.",e);
         }
     }
 }
