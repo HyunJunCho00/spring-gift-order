@@ -30,7 +30,7 @@ public class MemberApiControllerTest {
     private ObjectMapper objectMapper;
 
     private RegisterRequestDto createDefaultRegisterRequest() {
-        RegisterRequestDto request = new RegisterRequestDto("test@email.com","password");
+        RegisterRequestDto request = new RegisterRequestDto("test@email.com", "password");
         return request;
     }
 
@@ -42,7 +42,7 @@ public class MemberApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.token").exists());
+                .andExpect(jsonPath("$.accessToken").exists());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class MemberApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
+                .andExpect(jsonPath("$.accessToken").exists());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class MemberApiControllerTest {
 
         String responseBody = loginResult.getResponse().getContentAsString();
         TokenResponse tokenResponse = objectMapper.readValue(responseBody, TokenResponse.class);
-        String token = tokenResponse.getToken();
+        String token = tokenResponse.getAccessToken();
 
         mockMvc.perform(get("/api/members/me")
                         .header("Authorization", "Bearer " + token))

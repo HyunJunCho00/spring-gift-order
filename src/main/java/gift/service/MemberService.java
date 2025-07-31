@@ -7,7 +7,9 @@ import gift.dto.RegisterRequestDto;
 import gift.dto.kakao.KakaoUserInfoResponse;
 import gift.entity.Member;
 import gift.entity.Role;
+import gift.exception.EmailAlreadyExistsException;
 import gift.exception.LoginFailedException;
+import gift.exception.MemberNotFoundException;
 import gift.repository.MemberRepository;
 import gift.security.JwtTokenProvider;
 import org.mindrot.jbcrypt.BCrypt;
@@ -30,11 +32,14 @@ public class MemberService {
 
     @Transactional
     public LoginResponse register(RegisterRequestDto request) {
+        if (memberRepository.findByEmail(request.email()).isPresent()) {
+            throw new EmailAlreadyExistsException("이미 가입된 이메일입니다: " + request.email());
+        }
         String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
         Member newMember = new Member(null, request.email(), hashedPassword, Role.USER, null, null);
-        memberRepository.save(newMember);
+        Member saveMember = memberRepository.save(newMember);
 
-        String accessToken = jwtTokenProvider.createToken(newMember.getEmail());
+        String accessToken = jwtTokenProvider.createToken(saveMember.getId());
         return new LoginResponse(accessToken);
     }
 
@@ -45,7 +50,7 @@ public class MemberService {
             throw new LoginFailedException("비밀번호가 일치하지 않습니다.");
         }
 
-        String accessToken = jwtTokenProvider.createToken(member.getEmail());
+        String accessToken = jwtTokenProvider.createToken(member.getId());
         return new LoginResponse(accessToken);
     }
 
@@ -73,7 +78,7 @@ public class MemberService {
 
     public MemberProfileDto findMemberProfileById(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + memberId));
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. ID: " + memberId));
         return new MemberProfileDto(member.getId(), member.getEmail());
     }
 }

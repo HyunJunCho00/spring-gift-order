@@ -1,9 +1,13 @@
 package gift.service;
 
-import gift.dto.*;
+import gift.dto.LoginRequestDto;
+import gift.dto.LoginResponse;
+import gift.dto.MemberProfileDto;
+import gift.dto.RegisterRequestDto;
 import gift.entity.Member;
 import gift.exception.EmailAlreadyExistsException;
 import gift.exception.LoginFailedException;
+import gift.exception.MemberNotFoundException;
 import gift.repository.MemberRepository;
 import gift.security.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +17,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,9 +46,9 @@ public class MemberServiceTest {
 
     @BeforeEach
     void setUp() {
-        registerRequestDto = new RegisterRequestDto("test@email.com",rawPassword);
+        registerRequestDto = new RegisterRequestDto("test@email.com", rawPassword);
 
-        loginRequestDto = new LoginRequestDto("test@email.com",rawPassword);
+        loginRequestDto = new LoginRequestDto("test@email.com", rawPassword);
 
         String hashPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
         member = new Member(1L, "test@email.com", hashPassword);
@@ -54,7 +59,7 @@ public class MemberServiceTest {
     void register_success() {
         given(memberRepository.findByEmail(registerRequestDto.email())).willReturn(Optional.empty());
         given(memberRepository.save(any(Member.class))).willReturn(member);
-        given(jwtTokenProvider.createToken(member.getEmail())).willReturn("test.token");
+        given(jwtTokenProvider.createToken(member.getId())).willReturn("test.token");
         LoginResponse tokenResponse = memberService.register(registerRequestDto);
         assertThat(tokenResponse.accessToken()).isEqualTo("test.token");
         verify(memberRepository).save(any(Member.class));
@@ -71,7 +76,7 @@ public class MemberServiceTest {
     @Test
     void login_success() {
         given(memberRepository.findByEmail(loginRequestDto.email())).willReturn(Optional.of(member));
-        given(jwtTokenProvider.createToken("test@email.com")).willReturn("test.token");
+        given(jwtTokenProvider.createToken(member.getId())).willReturn("test.token");
         LoginResponse tokenResponse = memberService.login(loginRequestDto);
         assertThat(tokenResponse.accessToken()).isEqualTo("test.token");
     }
@@ -105,7 +110,8 @@ public class MemberServiceTest {
     void findMemberProfileById_fail_not_found() {
         Long nonExistentId = 999L;
         given(memberRepository.findById(nonExistentId)).willReturn(Optional.empty());
-        assertThatThrownBy(() -> memberService.findMemberProfileById(nonExistentId))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThrows(MemberNotFoundException.class, () -> {
+            memberService.findMemberProfileById(nonExistentId);
+        });
     }
 }
