@@ -20,7 +20,7 @@ public class Member {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    @OneToMany(mappedBy = "member",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Wish> wishes = new ArrayList<>();
 
     private String nickname;
@@ -32,7 +32,7 @@ public class Member {
     protected Member() {
     }
 
-    public Member(String email,String password){
+    public Member(String email, String password) {
         this.email = email;
         this.password = password;
     }
@@ -46,7 +46,10 @@ public class Member {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public Member(long l, String mail, String hashPassword) {
+    public Member(Long id, String mail, String hashPassword) {
+        this.id = id;
+        this.email = mail;
+        this.password = hashPassword;
     }
 
     public void updateProfile(String nickname, String profileImageUrl) {
@@ -58,12 +61,35 @@ public class Member {
         this.kakaoAccessToken = kakaoAccessToken;
     }
 
-    public Long getId() { return id; }
-    public String getEmail() { return email; }
-    public String getPassword() { return password; }
-    public Role getRole() { return role; }
-    public String getNickname() { return nickname; }
-    public String getProfileImageUrl() { return profileImageUrl; }
-    public String getKakaoAccessToken() { return kakaoAccessToken; }
-    public List<Wish> getWishes() { return wishes; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public String getKakaoAccessToken() {
+        return kakaoAccessToken;
+    }
+
+    public List<Wish> getWishes() {
+        return wishes;
+    }
 }

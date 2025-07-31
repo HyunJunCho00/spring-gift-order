@@ -6,14 +6,14 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="orders")
+@Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch=FetchType.LAZY, optional = false)
-    @JoinColumn(name = "option_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "option_id", nullable = false)
     private Option option;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -29,7 +29,8 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     private String message;
 
-    protected Order() {}
+    protected Order() {
+    }
 
     public Order(Option option, Member member, int quantity, String message) {
         this.option = option;
@@ -37,16 +38,34 @@ public class Order {
         this.quantity = quantity;
         this.message = message;
     }
+
     @PrePersist
     public void prePersist() {
         this.orderDateTime = LocalDateTime.now();
     }
 
-    public Long getId() { return id; }
-    public Option getOption() { return option; }
-    public Member getMember() { return member; }
-    public int getQuantity() { return quantity; }
-    public LocalDateTime getOrderDateTime() { return orderDateTime; }
-    public String getMessage() { return message; }
+    public Long getId() {
+        return id;
+    }
+
+    public Option getOption() {
+        return option;
+    }
+
+    public Member getMember() {
+        return member;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public LocalDateTime getOrderDateTime() {
+        return orderDateTime;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 
 }
